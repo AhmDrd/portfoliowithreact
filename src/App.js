@@ -9,7 +9,13 @@ import Footer from "./scenes/Footer";
 import useMediaQuery from "./hooks/useMediaQuery";
 import { useEffect, useState } from "react";
 import Testimonials from "./scenes/Testimonials";
-import { motion } from "framer-motion";
+
+const sectionIds = ["home", "skills", "projects", "testimonials", "contact"];
+const sectionActivationLine = 140;
+
+const SectionTracker = ({ className = "", children }) => (
+  <div className={className}>{children}</div>
+);
 
 function App() {
   const [selectedPage, setSelectedPage] = useState("home");
@@ -18,13 +24,46 @@ function App() {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY === 0) {
-        setIsTopOfPage(true);
-        setSelectedPage("home");
+      const scrollY = window.scrollY;
+      setIsTopOfPage(scrollY === 0);
+
+      if (scrollY === 0) {
+        setSelectedPage((prev) => (prev === "home" ? prev : "home"));
+        return;
       }
-      if (window.scrollY !== 0) setIsTopOfPage(false);
+
+      let activeSection = "home";
+      let fallbackSection = "home";
+
+      for (const sectionId of sectionIds) {
+        const section = document.getElementById(sectionId);
+        if (!section) continue;
+
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= sectionActivationLine) {
+          fallbackSection = sectionId;
+        }
+
+        if (
+          rect.top <= sectionActivationLine &&
+          rect.bottom > sectionActivationLine
+        ) {
+          activeSection = sectionId;
+          break;
+        }
+      }
+
+      if (activeSection === "home" && fallbackSection !== "home") {
+        activeSection = fallbackSection;
+      }
+
+      setSelectedPage((prev) =>
+        prev === activeSection ? prev : activeSection
+      );
     };
-    window.addEventListener("scroll", handleScroll);
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -35,61 +74,31 @@ function App() {
         selectedPage={selectedPage}
         setSelectedPage={setSelectedPage}
       />
-      <div className="w-5/6 mx-auto md:h-full">
+      <SectionTracker className="w-5/6 mx-auto md:h-full">
         {isDesktop && (
           <DotGroup
             selectedPage={selectedPage}
             setSelectedPage={setSelectedPage}
           />
         )}
-        <motion.div
-          margin="0 0 -200px 0"
-          amount="all"
-          onViewportEnter={() => setSelectedPage("home")}
-        >
-          <Landing setSelectedPage={setSelectedPage} />
-        </motion.div>
-      </div>
+        <Landing setSelectedPage={setSelectedPage} />
+      </SectionTracker>
       <LineGradient />
-      <div className="w-5/6 mx-auto md:h-full ">
-        <motion.div
-          margin="0 0 -200px 0"
-          amount="all"
-          onViewportEnter={() => setSelectedPage("skills")}
-        >
-          <MySkills />
-        </motion.div>
-      </div>
+      <SectionTracker className="w-5/6 mx-auto md:h-full">
+        <MySkills />
+      </SectionTracker>
       <LineGradient />
-      <div className="w-5/6 mx-auto">
-        <motion.div
-          margin="0 0 -200px 0"
-          amount="all"
-          onViewportEnter={() => setSelectedPage("projects")}
-        >
-          <Projects />
-        </motion.div>
-      </div>
+      <SectionTracker className="w-5/6 mx-auto">
+        <Projects />
+      </SectionTracker>
       <LineGradient />
-      <div className="w-5/6 mx-auto md:h-full">
-        <motion.div
-          margin="0 0 -200px 0"
-          amount="all"
-          onViewportEnter={() => setSelectedPage("testimonials")}
-        >
-          <Testimonials />
-        </motion.div>
-      </div>
+      <SectionTracker className="w-5/6 mx-auto md:h-full">
+        <Testimonials />
+      </SectionTracker>
       <LineGradient />
-      <div className="w-5/6 mx-auto md:h-full">
-        <motion.div
-          margin="0 0 -200px 0"
-          amount="all"
-          onViewportEnter={() => setSelectedPage("contact")}
-        >
-          <Contact />
-        </motion.div>
-      </div>
+      <SectionTracker className="w-5/6 mx-auto md:h-full">
+        <Contact />
+      </SectionTracker>
       <Footer />
     </div>
   );

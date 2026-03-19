@@ -10,7 +10,7 @@ const Footer = () => {
             JANE ESPER
           </p>
           <p className="font-playfair text-md text-yellow">
-            ©2022 ESPER. All Rights Reserved.
+            ©2026 ESPER. All Rights Reserved.
           </p>
         </div>
       </div>
