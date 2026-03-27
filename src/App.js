@@ -23,12 +23,15 @@ function App() {
   const isDesktop = useMediaQuery("(min-width: 1060px)");
 
   useEffect(() => {
-    const handleScroll = () => {
+    let frameId = null;
+
+    const updateScrollState = () => {
       const scrollY = window.scrollY;
       setIsTopOfPage(scrollY === 0);
 
       if (scrollY === 0) {
         setSelectedPage((prev) => (prev === "home" ? prev : "home"));
+        frameId = null;
         return;
       }
 
@@ -60,11 +63,25 @@ function App() {
       setSelectedPage((prev) =>
         prev === activeSection ? prev : activeSection
       );
+      frameId = null;
+    };
+
+    const handleScroll = () => {
+      if (frameId != null) {
+        return;
+      }
+
+      frameId = window.requestAnimationFrame(updateScrollState);
     };
 
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (frameId != null) {
+        window.cancelAnimationFrame(frameId);
+      }
+    };
   }, []);
 
   return (

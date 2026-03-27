@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 const NAV_LINKS = ["Home", "Skills", "Projects", "Testimonials", "Contact"];
 const ANCHOR_OFFSET = 96;
+const EASE_OUT_EXPO = [0.22, 1, 0.36, 1];
 
 const Link = ({ page, selectedPage, setSelectedPage, onNavigate }) => {
   const lowerCasePage = page.toLowerCase();
@@ -39,6 +40,7 @@ const Link = ({ page, selectedPage, setSelectedPage, onNavigate }) => {
 const Navbar = ({ isTopOfPage, selectedPage, setSelectedPage }) => {
   const [isMenuToggled, setIsMenuToggled] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const isCompact = !isTopOfPage;
 
   useEffect(() => {
     if (isDesktop) {
@@ -59,23 +61,68 @@ const Navbar = ({ isTopOfPage, selectedPage, setSelectedPage }) => {
     };
   }, [isDesktop, isMenuToggled]);
 
+  const navTransition = {
+    y: { duration: 0.55, ease: EASE_OUT_EXPO },
+    opacity: { duration: 0.38, ease: EASE_OUT_EXPO },
+    default: { duration: 0.42, ease: EASE_OUT_EXPO },
+  };
+
   return (
     <>
       <motion.nav
         initial={{ y: -28, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed top-0 z-40 w-full border-b transition-all duration-500 ${
-          isTopOfPage
-            ? "border-transparent bg-transparent py-6"
-            : "border-white/20 bg-red/90 py-4 shadow-[0_14px_40px_-16px_rgba(0,0,0,0.7)] backdrop-blur-md"
-        }`}
+        animate={{
+          y: 0,
+          opacity: 1,
+          paddingTop: isCompact ? 14 : 24,
+          paddingBottom: isCompact ? 14 : 24,
+          backgroundColor: isCompact
+            ? "rgba(1, 0, 38, 0.62)"
+            : "rgba(1, 0, 38, 0)",
+          borderColor: isCompact
+            ? "rgba(255, 255, 255, 0.14)"
+            : "rgba(255, 255, 255, 0)",
+          boxShadow: isCompact
+            ? "0 22px 54px -26px rgba(0, 0, 0, 0.72)"
+            : "0 0 0 rgba(0, 0, 0, 0)",
+        }}
+        transition={navTransition}
+        style={{
+          backdropFilter: isCompact ? "blur(18px) saturate(145%)" : "blur(0px)",
+          WebkitBackdropFilter: isCompact
+            ? "blur(18px) saturate(145%)"
+            : "blur(0px)",
+        }}
+        className="fixed top-0 z-40 w-full overflow-hidden border-b"
       >
-        <div className="mx-auto flex w-5/6 items-center justify-between">
+        <motion.div
+          className="pointer-events-none absolute inset-0"
+          animate={{ opacity: isCompact ? 1 : 0 }}
+          transition={{ duration: 0.35, ease: EASE_OUT_EXPO }}
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(220,68,146,0.18) 0%, rgba(1,0,38,0.06) 30%, rgba(1,0,38,0.12) 100%)",
+          }}
+        />
+        <motion.div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-rainblue"
+          animate={{ opacity: isCompact ? 0.5 : 0 }}
+          transition={{ duration: 0.35, ease: EASE_OUT_EXPO }}
+        />
+
+        <motion.div
+          animate={{ gap: isCompact ? 24 : 32 }}
+          transition={{ duration: 0.42, ease: EASE_OUT_EXPO }}
+          className="relative mx-auto flex w-5/6 items-center justify-between"
+        >
           <motion.h4
-            className="font-playfair text-3xl font-bold"
-            whileHover={{ y: -2 }}
-            transition={{ duration: 0.2 }}
+            className="font-playfair text-3xl font-bold tracking-[0.08em]"
+            whileHover={{ y: isCompact ? -3 : -2 }}
+            animate={{
+              scale: isCompact ? 0.9 : 1,
+              y: isCompact ? -1 : 0,
+            }}
+            transition={{ duration: 0.42, ease: EASE_OUT_EXPO }}
           >
             JE
           </motion.h4>
@@ -84,9 +131,13 @@ const Navbar = ({ isTopOfPage, selectedPage, setSelectedPage }) => {
           {isDesktop ? (
             <motion.div
               initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="flex items-center gap-12"
+              animate={{ opacity: 1, y: 0, gap: isCompact ? "2.25rem" : "3rem" }}
+              transition={{
+                opacity: { duration: 0.4, delay: 0.1 },
+                y: { duration: 0.4, delay: 0.1 },
+                gap: { duration: 0.42, ease: EASE_OUT_EXPO },
+              }}
+              className="flex items-center"
             >
               {NAV_LINKS.map((page) => (
                 <Link
@@ -99,17 +150,23 @@ const Navbar = ({ isTopOfPage, selectedPage, setSelectedPage }) => {
             </motion.div>
           ) : (
             <motion.button
-              className="rounded-full bg-red p-2 shadow-lg shadow-deep-blue/40"
+              className="rounded-full border border-white/10 bg-red/90 shadow-lg shadow-deep-blue/40"
               onClick={() => setIsMenuToggled(!isMenuToggled)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.93 }}
-              transition={{ duration: 0.2 }}
+              animate={{
+                padding: isCompact ? "0.42rem" : "0.52rem",
+                boxShadow: isCompact
+                  ? "0 14px 28px rgba(1, 0, 38, 0.38)"
+                  : "0 18px 34px rgba(1, 0, 38, 0.28)",
+              }}
+              transition={{ duration: 0.32, ease: EASE_OUT_EXPO }}
               aria-label="Open navigation menu"
             >
               <img alt="menu-icon" src="../assets/menu-icon.svg" />
             </motion.button>
           )}
-        </div>
+        </motion.div>
       </motion.nav>
 
       {/* MOBILE MENU POPUP */}
